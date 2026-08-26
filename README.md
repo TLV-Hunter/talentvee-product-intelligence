@@ -2,15 +2,15 @@
 
 ## เปิดใช้งาน
 
-🌐 **[เปิด TalentVee Product Intelligence](https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site)**
+🌐 **[เปิด TalentVee Product Intelligence](https://tlv-hunter.github.io/talentvee-product-intelligence/)**
 
-> GitHub Repository นี้เก็บ Source ส่วนเว็บไซต์ Production เปิดจากลิงก์ด้านบน
+> เว็บไซต์ Production ใช้ GitHub Pages แบบฟรีและ Local-first
 
 ระบบวิเคราะห์สินค้า Shopee Affiliate ประกอบด้วย Chrome Extension สำหรับอ่านข้อมูลจาก session ที่ผู้ใช้ล็อกอินเอง และ Dashboard สำหรับจัดอันดับสินค้า ดูประวัติ Watchlist และสำรองข้อมูลข้ามเครื่อง
 
 ## โครงสร้าง
 
-- `extension/` — TalentVee Shopee Affiliate Connector v1.1.0
+- `extension/` — TalentVee Shopee Affiliate Connector v1.2.0
 - `dashboard/` — TalentVee Product Intelligence web dashboard และ `/api/sync`
 - `docs/` — คู่มือย้ายบัญชี ย้าย Hosting และ Acceptance Test
 
@@ -23,7 +23,7 @@
 
 ## รุ่นปัจจุบัน
 
-- Extension: `1.1.0`
+- Extension: `1.2.0`
 - Full Backup format: `talentvee-full-backup` version `1`
 - Dashboard production source: version 8 checkpoint
 
