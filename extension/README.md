@@ -1,10 +1,10 @@
 # TalentVee — Shopee Affiliate Connector
 
-Chrome Extension รุ่น `v1.1.0` สำหรับตรวจ session สแกนหลายหน้า/ทุกหมวดที่ตรวจพบ เก็บประวัติ จัดอันดับสินค้า Shopee Affiliate ส่งข้อมูลเข้า TalentVee Product Intelligence และสำรอง/กู้คืนข้อมูลข้ามเครื่อง
+Chrome Extension รุ่น `v1.2.0` สำหรับตรวจ session สแกนหลายหน้า/ทุกหมวดที่ตรวจพบ เก็บประวัติ จัดอันดับสินค้า Shopee Affiliate และส่งข้อมูลเข้า TalentVee Product Intelligence บน GitHub Pages
 
-เว็บ Dashboard: `https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site`
+เว็บ Dashboard: `https://tlv-hunter.github.io/talentvee-product-intelligence/`
 
-ปุ่ม “เปิดเว็บ Product Intelligence” จะเปิด Dashboard ซิงก์ฐานข้อมูลจาก Extension และสำรองเข้า Cloud ส่วนตัวให้อัตโนมัติ เมื่อเปลี่ยนเครื่องให้เปิดเว็บด้วยบัญชีเดิมเพื่อกู้ข้อมูล Top 10, ขายดี, โตไว, สินค้าใหม่, รายหมวด และ Watchlist ส่วนไฟล์ JSON ยังใช้เป็นทางเลือกสำรองฉุกเฉินได้
+ปุ่ม “เปิดเว็บ Product Intelligence” จะเปิด GitHub Pages และส่งฐานข้อมูลจาก Extension เข้าเว็บโดยตรง ข้อมูลจริงเก็บในเบราว์เซอร์ของผู้ใช้ เมื่อเปลี่ยนเครื่องให้ใช้ Full Backup เพื่อกู้ Top 10, ขายดี, โตไว, สินค้าใหม่, รายหมวด และ Watchlist โดยไม่ต้องสแกนใหม่
 
 ## หลักการสำคัญ
 
@@ -50,9 +50,9 @@ Chrome Extension รุ่น `v1.1.0` สำหรับตรวจ session �
 
 - กด **เปิดเว็บ TalentVee Product Intelligence** ได้จากด้านบนของ Connector ตลอดเวลา
 - บนเว็บกด **ดึงข้อมูลจาก Connector** เพื่อรับฐานข้อมูลล่าสุดทันที
-- ตั้งส่งอัตโนมัติได้ทุก 15 นาที, 30 นาที, 1 ชั่วโมง, 3 ชั่วโมง หรือ 6 ชั่วโมง
+- เมื่อเว็บเปิดอยู่ Connector จะส่งฐานข้อมูลล่าสุดให้ทันทีและส่งซ้ำเมื่อฐานข้อมูลเปลี่ยน
 - Connector และ Dashboard จะแสดงเวลาสแกนล่าสุดและเวลาส่งข้อมูลล่าสุดแยกกัน
-- การส่งอัตโนมัติต้องเคยเปิด Dashboard และเข้าสู่บัญชีที่มีสิทธิ์อย่างน้อยหนึ่งครั้ง
+- GitHub Pages ไม่ต้องล็อกอิน และไม่รับ Password, OTP, Cookie หรือ Shopee Session
 
 เมื่อติดตั้ง v1.0.0 และเห็นว่าเปิดใช้งานได้แล้ว จึงค่อย Remove รายการ Extension รุ่นเก่าที่ขึ้นข้อผิดพลาด path `ShopeeConnector-v0.2.0\extension`
 
@@ -113,7 +113,7 @@ Chrome Extension รุ่น `v1.1.0` สำหรับตรวจ session �
 - ✅ Dashboard ค้นหา กรอง เรียงคะแนน และส่งออก Intelligence CSV/JSON
 - ✅ ปุ่มเปิดเว็บ Product Intelligence พร้อมซิงก์ฐานข้อมูลจาก Extension
 - ✅ เว็บจัดอันดับ Top 10, โตไว, สินค้าใหม่/เพิ่งพบ, วิเคราะห์หมวด และ Watchlist
-- ✅ Cloud Backup และ Restore ข้ามเครื่องด้วยบัญชีที่ได้รับอนุญาต
+- ✅ Full Backup และ Restore ข้ามเครื่อง พร้อม SHA-256 checksum
 - ✅ สแกนหลักฐาน Base/Extra/Total บนหน้ารายละเอียดโดยไม่เดา
 - ✅ ส่งออก CSV/JSON และดาวน์โหลดรูป
 - ✅ มี Diagnostic สำหรับปรับ selector
