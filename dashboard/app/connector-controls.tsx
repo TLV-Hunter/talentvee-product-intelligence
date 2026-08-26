@@ -14,6 +14,7 @@ const REQUEST = "TALENTVEE_DASHBOARD_REQUEST";
 const RESPONSE = "TALENTVEE_DASHBOARD_DATA";
 const SETTINGS = "TALENTVEE_DASHBOARD_SETTINGS";
 const STATUS = "TALENTVEE_DASHBOARD_STATUS";
+const STATIC_PAGES = typeof __TALENTVEE_STATIC__ !== "undefined" && __TALENTVEE_STATIC__;
 
 function stamp(value?: string | null) {
   if (!value) return "—";
@@ -87,7 +88,7 @@ export default function ConnectorControls() {
       <div className="connector-actions">
         <button type="button" onClick={pullNow}>{state === "requesting" ? "กำลังดึง…" : "ดึงข้อมูลจาก Connector"}</button>
         <a href="https://affiliate.shopee.co.th/offer/product_offer" target="_blank" rel="noreferrer">เปิด Shopee Affiliate ↗</a>
-        <label>
+        {STATIC_PAGES ? <span className="connector-local-note">Local-first<br />ส่งทันทีเมื่อเว็บเปิด</span> : <label>
           <span>ส่งอัตโนมัติ</span>
           <select value={intervalMinutes} onChange={(event) => changeInterval(Number(event.target.value))}>
             <option value="0">ปิด</option>
@@ -97,7 +98,7 @@ export default function ConnectorControls() {
             <option value="180">ทุก 3 ชั่วโมง</option>
             <option value="360">ทุก 6 ชั่วโมง</option>
           </select>
-        </label>
+        </label>}
       </div>
     </section>
   );
