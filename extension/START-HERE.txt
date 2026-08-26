@@ -1,0 +1,16 @@
+TalentVee Shopee Affiliate Connector v1.2.0
+
+วิธีอัปเดตที่ง่ายที่สุด
+
+1. แตกไฟล์ ZIP ก่อน ห้ามเปิดใช้งานจากใน ZIP
+2. ดับเบิลคลิก INSTALL-TALENTVEE.cmd
+3. รอให้โฟลเดอร์ %LOCALAPPDATA%\TalentVee\ShopeeConnector เปิดขึ้น
+4. เปิด chrome://extensions
+5. ถ้ามี TalentVee Connector อยู่แล้ว ให้กด Reload ที่รายการเดิม
+6. ถ้ายังไม่เคยติดตั้ง ให้กด Load unpacked แล้วเลือกโฟลเดอร์ที่เปิดในข้อ 3
+
+ตรวจว่ามุมบนของแผงแสดง v1.2.0
+ปุ่มเปิดเว็บจะไปที่:
+https://tlv-hunter.github.io/talentvee-product-intelligence/
+
+ห้ามเลือกโฟลเดอร์ชั้นนอกที่ไม่มี manifest.json
