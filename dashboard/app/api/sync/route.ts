@@ -1,20 +1,18 @@
-import { eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
-import { cloudSync } from "../../../db/schema";
-import { getBucket } from "../../../db/storage";
+import { cloudSync, cloudSyncChunk } from "../../../db/schema";
 
 export const dynamic = "force-dynamic";
 
-const MAX_BODY_BYTES = 25 * 1024 * 1024;
+const MAX_BODY_BYTES = 8 * 1024 * 1024;
+const CHUNK_CHARACTERS = 400_000;
 
 async function identity() {
   const user = await getChatGPTUser();
   if (!user?.email) return null;
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(user.email.toLowerCase()));
-  const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-  return { email: user.email.toLowerCase(), objectKey: `users/${hash}/product-intelligence.json` };
+  return { email: user.email.toLowerCase() };
 }
 
 function unauthorized() {
@@ -26,9 +24,15 @@ export async function GET() {
   if (!user) return unauthorized();
   const record = await getDb().select().from(cloudSync).where(eq(cloudSync.userEmail, user.email)).get();
   if (!record) return NextResponse.json({ ok: true, found: false });
-  const object = await getBucket().get(record.objectKey);
-  if (!object) return NextResponse.json({ ok: true, found: false });
-  const payload = await object.json();
+  const chunks = await getDb().select().from(cloudSyncChunk)
+    .where(and(eq(cloudSyncChunk.userEmail, user.email), eq(cloudSyncChunk.revision, record.revision)))
+    .orderBy(asc(cloudSyncChunk.chunkIndex)).all();
+  if (!chunks.length || chunks.length !== record.chunkCount) {
+    return NextResponse.json({ ok: false, error: "CLOUD_BACKUP_INCOMPLETE" }, { status: 503 });
+  }
+  let payload: unknown;
+  try { payload = JSON.parse(chunks.map((chunk) => chunk.payloadChunk).join("")); }
+  catch { return NextResponse.json({ ok: false, error: "CLOUD_BACKUP_CORRUPT" }, { status: 503 }); }
   let watchlist: string[] = [];
   try { watchlist = JSON.parse(record.watchlistJson); } catch { watchlist = []; }
   return NextResponse.json({ ok: true, found: true, payload, watchlist, updatedAt: record.updatedAt, productCount: record.productCount });
@@ -53,10 +57,43 @@ export async function POST(request: Request) {
   const payload = normalizedProducts ? { products: normalizedProducts, updatedAt } : { database: body.database, updatedAt };
   const encoded = JSON.stringify(payload);
   if (new TextEncoder().encode(encoded).byteLength > MAX_BODY_BYTES) return NextResponse.json({ ok: false, error: "DATA_TOO_LARGE" }, { status: 413 });
-  await getBucket().put(user.objectKey, encoded, { httpMetadata: { contentType: "application/json;charset=utf-8" } });
   const dataBytes = new TextEncoder().encode(encoded).byteLength;
-  await getDb().insert(cloudSync).values({ userEmail: user.email, objectKey: user.objectKey, updatedAt, productCount, dataBytes, watchlistJson: JSON.stringify(watchlist), schemaVersion: 1 }).onConflictDoUpdate({ target: cloudSync.userEmail, set: { objectKey: user.objectKey, updatedAt, productCount, dataBytes, watchlistJson: JSON.stringify(watchlist), schemaVersion: 1 } });
-  return NextResponse.json({ ok: true, updatedAt, productCount, dataBytes });
+  const revision = crypto.randomUUID();
+  const payloadChunks = Array.from({ length: Math.ceil(encoded.length / CHUNK_CHARACTERS) }, (_, index) => ({
+    userEmail: user.email,
+    revision,
+    chunkIndex: index,
+    payloadChunk: encoded.slice(index * CHUNK_CHARACTERS, (index + 1) * CHUNK_CHARACTERS),
+  }));
+  const db = getDb();
+  const previous = await db.select().from(cloudSync).where(eq(cloudSync.userEmail, user.email)).get();
+  await db.insert(cloudSyncChunk).values(payloadChunks);
+  await db.insert(cloudSync).values({
+    userEmail: user.email,
+    objectKey: `d1:${revision}`,
+    updatedAt,
+    productCount,
+    dataBytes,
+    watchlistJson: JSON.stringify(watchlist),
+    schemaVersion: 2,
+    revision,
+    chunkCount: payloadChunks.length,
+    payloadFormat: "json-chunks-v1",
+  }).onConflictDoUpdate({ target: cloudSync.userEmail, set: {
+    objectKey: `d1:${revision}`,
+    updatedAt,
+    productCount,
+    dataBytes,
+    watchlistJson: JSON.stringify(watchlist),
+    schemaVersion: 2,
+    revision,
+    chunkCount: payloadChunks.length,
+    payloadFormat: "json-chunks-v1",
+  } });
+  if (previous?.revision && previous.revision !== revision) {
+    await db.delete(cloudSyncChunk).where(and(eq(cloudSyncChunk.userEmail, user.email), eq(cloudSyncChunk.revision, previous.revision)));
+  }
+  return NextResponse.json({ ok: true, updatedAt, productCount, dataBytes, chunkCount: payloadChunks.length, storage: "D1_ONLY" });
 }
 
 export async function PATCH(request: Request) {
