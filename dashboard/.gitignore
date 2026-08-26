@@ -38,5 +38,7 @@ next-env.d.ts
 /dist/
 /.wrangler/
 /.sites-runtime/
+/.dev.vars
+/.dev.vars.*
 /outputs/
 /work/
