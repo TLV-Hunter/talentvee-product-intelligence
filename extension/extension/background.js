@@ -2,12 +2,13 @@ importScripts('config.js');
 
 const DASHBOARD_URL = globalThis.TalentVeeConfig.dashboardUrl;
 const CLOUD_SYNC_URL = `${DASHBOARD_URL}${globalThis.TalentVeeConfig.syncPath}`;
+const CLOUD_SYNC_ENABLED = globalThis.TalentVeeConfig.cloudSyncEnabled !== false;
 const DB_KEY = 'talentVeeProductIntelligence';
 const AUTO_SYNC_KEY = 'talentVeeAutoSyncMinutes';
 const AUTO_SYNC_ALARM = 'talentvee-cloud-sync';
 
 async function configureAutoSync(minutes) {
-  const value = Number(minutes) || 0;
+  const value = CLOUD_SYNC_ENABLED ? Number(minutes) || 0 : 0;
   await chrome.alarms.clear(AUTO_SYNC_ALARM);
   await chrome.storage.local.set({ [AUTO_SYNC_KEY]: value });
   if (value >= 15) {
@@ -21,6 +22,12 @@ async function syncDatabaseToCloud(source = 'manual') {
   const database = stored[DB_KEY];
   if (!database?.products || !Object.keys(database.products).length) {
     const result = { ok: false, status: 'NO_DATA', at: new Date().toISOString(), source };
+    await chrome.storage.local.set({ lastDashboardSyncStatus: result });
+    return result;
+  }
+
+  if (!CLOUD_SYNC_ENABLED) {
+    const result = { ok: true, status: 'LOCAL_READY', at: new Date().toISOString(), source, productCount: Object.keys(database.products).length };
     await chrome.storage.local.set({ lastDashboardSyncStatus: result });
     return result;
   }
@@ -50,7 +57,7 @@ async function syncDatabaseToCloud(source = 'manual') {
 
 chrome.runtime.onInstalled.addListener(async () => {
   const stored = await chrome.storage.local.get(AUTO_SYNC_KEY);
-  const minutes = stored[AUTO_SYNC_KEY] == null ? 30 : Number(stored[AUTO_SYNC_KEY]) || 0;
+  const minutes = CLOUD_SYNC_ENABLED && stored[AUTO_SYNC_KEY] == null ? 30 : Number(stored[AUTO_SYNC_KEY]) || 0;
   await chrome.storage.local.set({
     installedAt: new Date().toISOString(),
     connectorVersion: chrome.runtime.getManifest().version
@@ -60,7 +67,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.runtime.onStartup.addListener(async () => {
   const stored = await chrome.storage.local.get(AUTO_SYNC_KEY);
-  await configureAutoSync(stored[AUTO_SYNC_KEY] == null ? 30 : Number(stored[AUTO_SYNC_KEY]) || 0);
+  await configureAutoSync(CLOUD_SYNC_ENABLED && stored[AUTO_SYNC_KEY] == null ? 30 : Number(stored[AUTO_SYNC_KEY]) || 0);
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
