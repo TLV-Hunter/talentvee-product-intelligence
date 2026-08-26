@@ -29,3 +29,11 @@
 
 เริ่มติดตั้ง Extension ได้จาก `extension/README.md` และเริ่มย้าย Hosting ได้จาก `docs/MIGRATION-CHECKLIST.md`
 
+## GitHub Pages (Free fallback)
+
+Static dashboard ที่เก็บข้อมูลแบบ Local-first อยู่ใน `docs/` และ build ใหม่ด้วย
+`cd dashboard && npm run build:pages` ได้ทันที เมื่อเปิด GitHub Pages จาก `main /docs`
+เว็บจะอยู่ที่ `https://tlv-hunter.github.io/talentvee-product-intelligence/`
+
+รุ่น GitHub Pages ไม่ส่ง Password, OTP, Cookie หรือ Shopee Session ขึ้น GitHub
+ข้อมูลสินค้าจริงอยู่ในเบราว์เซอร์ของผู้ใช้ และย้ายเครื่องด้วย Full Backup ที่มี SHA-256 checksum
