@@ -7,7 +7,8 @@
   const MAX_HISTORY = 30;
   const APP_VERSION = chrome.runtime.getManifest().version;
   const CONFIG = globalThis.TalentVeeConfig || {};
-  const DASHBOARD_URL = CONFIG.dashboardUrl || 'https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site';
+  const DASHBOARD_URL = CONFIG.dashboardUrl || 'https://tlv-hunter.github.io/talentvee-product-intelligence/';
+  const CLOUD_SYNC_ENABLED = CONFIG.cloudSyncEnabled !== false;
   const BACKUP_FORMAT = CONFIG.backupFormat || 'talentvee-full-backup';
   const BACKUP_VERSION = Number(CONFIG.backupVersion) || 1;
 
@@ -378,8 +379,12 @@
       ui.progressSub.textContent = `ไม่ซ้ำ ${snapshot.items?.length || 0} รายการ · ${snapshot.categories?.length || 0} หมวด${snapshot.warnings?.length ? ` · คำเตือน ${snapshot.warnings.length}` : ''}`;
       setBadge(snapshot.status === 'done' ? 'READY' : 'PARTIAL', snapshot.status === 'done' ? 'is-ok' : 'is-error');
       renderDashboard();
-      const syncResult = await chrome.runtime.sendMessage({ type: 'sync-now', source: 'scan-complete' }).catch(() => null);
-      if (syncResult?.ok) renderSyncStatus({ lastSyncAt: syncResult.at });
+      if (CLOUD_SYNC_ENABLED) {
+        const syncResult = await chrome.runtime.sendMessage({ type: 'sync-now', source: 'scan-complete' }).catch(() => null);
+        if (syncResult?.ok) renderSyncStatus({ lastSyncAt: syncResult.at });
+      } else if (ui.lastSync) {
+        ui.lastSync.textContent = 'บันทึกใน Connector แล้ว · เปิดเว็บเพื่อส่งข้อมูล';
+      }
     } finally {
       processing = false;
     }
@@ -735,6 +740,10 @@
 
   function renderSyncStatus(status) {
     if (!ui.lastSync) return;
+    if (!CLOUD_SYNC_ENABLED) {
+      ui.lastSync.textContent = 'Local-first · ส่งข้อมูลทันทีเมื่อเปิดเว็บ';
+      return;
+    }
     if (status?.lastSyncAt) {
       ui.lastSync.textContent = `ส่งล่าสุด ${new Date(status.lastSyncAt).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
       return;
@@ -747,6 +756,10 @@
   }
 
   async function loadSyncSettings() {
+    if (!CLOUD_SYNC_ENABLED) {
+      renderSyncStatus(null);
+      return;
+    }
     const status = await chrome.runtime.sendMessage({ type: 'get-sync-status' }).catch(() => null);
     if (!status) return;
     if (ui.autoSync) ui.autoSync.value = String(status.minutes || 0);
@@ -754,6 +767,7 @@
   }
 
   async function updateAutoSync() {
+    if (!CLOUD_SYNC_ENABLED) return;
     const minutes = Number(ui.autoSync?.value) || 0;
     await chrome.runtime.sendMessage({ type: 'set-auto-sync', minutes });
     if (ui.lastSync) ui.lastSync.textContent = minutes ? `ตั้งส่งอัตโนมัติทุก ${minutes} นาที` : 'ปิดการส่งอัตโนมัติแล้ว';
@@ -761,6 +775,11 @@
 
   async function syncNow() {
     if (!ui.syncNow) return;
+    if (!CLOUD_SYNC_ENABLED) {
+      await openDashboard();
+      ui.lastSync.textContent = 'เปิดเว็บแล้ว · เว็บจะดึงข้อมูลจาก Connector';
+      return;
+    }
     const original = ui.syncNow.textContent;
     ui.syncNow.disabled = true;
     ui.syncNow.textContent = 'กำลังส่ง…';
