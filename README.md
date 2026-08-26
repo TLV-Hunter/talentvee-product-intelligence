@@ -1,5 +1,11 @@
 # TalentVee Product Intelligence
 
+## เปิดใช้งาน
+
+🌐 **[เปิด TalentVee Product Intelligence](https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site)**
+
+> GitHub Repository นี้เก็บ Source ส่วนเว็บไซต์ Production เปิดจากลิงก์ด้านบน
+
 ระบบวิเคราะห์สินค้า Shopee Affiliate ประกอบด้วย Chrome Extension สำหรับอ่านข้อมูลจาก session ที่ผู้ใช้ล็อกอินเอง และ Dashboard สำหรับจัดอันดับสินค้า ดูประวัติ Watchlist และสำรองข้อมูลข้ามเครื่อง
 
 ## โครงสร้าง
