@@ -1,0 +1,49 @@
+.github-pages-notice {
+  position: fixed;
+  z-index: 60;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  gap: 3px;
+  max-width: 290px;
+  padding: 12px 14px;
+  border: 1px solid #bfe9da;
+  border-radius: 12px;
+  color: #134e3c;
+  background: #f2fbf7ee;
+  box-shadow: 0 14px 34px #17203320;
+  backdrop-filter: blur(8px);
+}
+
+.github-pages-notice strong { font-size: 11px; }
+.github-pages-notice span { font-size: 9px; font-weight: 700; }
+.github-pages-notice small { color: #526072; font-size: 8px; }
+
+.cloud-badge.local i {
+  background: #15946b;
+  box-shadow: 0 0 0 4px #15946b18;
+}
+
+.guide-card > * { display: none; }
+
+.guide-card::before {
+  content: "GITHUB PAGES BACKUP";
+  display: block;
+  color: #ff5a2f;
+  font: 800 8px ui-monospace, monospace;
+  letter-spacing: .16em;
+}
+
+.guide-card::after {
+  content: "ย้ายเครื่องได้ด้วย Full Backup\A\A1. สแกนและจัดอันดับสินค้าบนเครื่องนี้\A2. กด ดาวน์โหลด Full Backup หลังอัปเดตข้อมูล\A3. เครื่องใหม่เปิดเว็บแล้วนำเข้าไฟล์เดิม\A\Aข้อมูลสินค้าอยู่ในเบราว์เซอร์ ไม่ส่ง Password, OTP หรือ Cookie ของ Shopee";
+  display: block;
+  margin-top: 10px;
+  color: #526072;
+  font-size: 11px;
+  line-height: 1.9;
+  white-space: pre-line;
+}
+
+@media (max-width: 760px) {
+  .github-pages-notice { right: 10px; bottom: 76px; left: 10px; max-width: none; }
+}
