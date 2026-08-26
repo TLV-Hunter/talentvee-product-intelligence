@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vinext build",
+    "build:pages": "vite build static --config vite.static.config.ts",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
     "db:migrate:remote": "wrangler d1 migrations apply talentvee-product-intelligence --remote",
