@@ -1,5 +1,5 @@
 (() => {
-  const API_VERSION = '1.1.0';
+  const API_VERSION = '1.2.0';
   if (window.__talentVeeCrawlerApiInstalled === API_VERSION) return;
   window.__talentVeeCrawlerApiInstalled = API_VERSION;
 
