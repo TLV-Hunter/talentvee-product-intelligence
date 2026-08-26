@@ -23,6 +23,7 @@
 .connector-actions a { color: var(--ink); border: 1px solid var(--line); background: #fff; }
 .connector-actions label span { display: block; margin-bottom: 3px; color: var(--muted); font-size: 7px; }
 .connector-actions select { min-height: 34px; padding: 0 7px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #fff; font-size: 8px; }
+.connector-local-note { align-self: center; color: var(--muted); font-size: 8px; font-weight: 700; line-height: 1.45; }
 @media (max-width: 900px) {
   .connector-command { align-items: stretch; flex-direction: column; }
   .connector-actions { flex-wrap: wrap; }
