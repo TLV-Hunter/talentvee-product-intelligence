@@ -1,0 +1,50 @@
+.portable-backup-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #cfe9df;
+  border-radius: 12px;
+  background: #f3fbf8;
+}
+
+.portable-backup-bar div {
+  flex: 1;
+}
+
+.portable-backup-bar strong,
+.portable-backup-bar small {
+  display: block;
+}
+
+.portable-backup-bar strong {
+  font-size: 10px;
+}
+
+.portable-backup-bar small {
+  margin-top: 3px;
+  color: #7a8497;
+  font-size: 8px;
+}
+
+.portable-backup-bar button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: #15946b;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .portable-backup-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .portable-backup-bar button {
+    width: 100%;
+  }
+}

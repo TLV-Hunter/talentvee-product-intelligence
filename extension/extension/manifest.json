@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "TalentVee — Shopee Affiliate Connector",
+  "version": "1.1.0",
+  "description": "สแกนทุกหน้าและทุกหมวด จัดอันดับสินค้า พร้อมส่งข้อมูลเข้า Product Intelligence แบบกดเองหรืออัตโนมัติ",
+  "minimum_chrome_version": "116",
+  "action": {
+    "default_title": "เปิด Shopee Affiliate Connector",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "unlimitedStorage",
+    "downloads",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://affiliate.shopee.co.th/*",
+    "https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://talentvee-product-intelligence.voxelhavenlofi.chatgpt.site/*"],
+      "js": ["dashboard-bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' data: https:"
+  }
+}

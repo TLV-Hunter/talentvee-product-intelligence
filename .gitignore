@@ -1,0 +1,30 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies and build outputs
+node_modules/
+.next/
+dist/
+coverage/
+.sites-runtime/
+.wrangler/
+
+# Hosting identity must be created per owner/account
+dashboard/.openai/hosting.json
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Backups may contain private business data
+*.talentvee-backup.json
+talentvee-full-backup*.json
+
