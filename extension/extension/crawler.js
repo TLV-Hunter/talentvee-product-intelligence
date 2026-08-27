@@ -1,5 +1,5 @@
 (() => {
-  const API_VERSION = '1.2.3';
+  const API_VERSION = '1.2.4';
   const MAX_PAGES_PER_CATEGORY = 500;
   if (window.__talentVeeCrawlerApiInstalled === API_VERSION) return;
   window.__talentVeeCrawlerApiInstalled = API_VERSION;

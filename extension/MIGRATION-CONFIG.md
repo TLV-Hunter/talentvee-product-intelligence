@@ -1,6 +1,6 @@
 # เปลี่ยนโดเมน Dashboard ภายหลัง
 
-รุ่น v1.2.3 รวมค่า Dashboard หลักไว้ที่ `config.js` และใช้ GitHub Pages แบบ Local-first
+รุ่น v1.2.4 รวมค่า Dashboard หลักไว้ที่ `config.js` และใช้ GitHub Pages แบบ Local-first
 
 เมื่อมีโดเมนใหม่ ให้แก้และทดสอบพร้อมกัน 3 จุด:
 

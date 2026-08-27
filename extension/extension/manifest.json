@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TalentVee — Shopee Affiliate Connector",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "สแกนทุกหน้าและทุกหมวด จัดอันดับสินค้า พร้อมส่งข้อมูลเข้า Product Intelligence แบบกดเองหรืออัตโนมัติ",
   "minimum_chrome_version": "116",
   "action": {

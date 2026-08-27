@@ -5,7 +5,7 @@ Branch: `release/v1.2.4`
 
 ## ผ่าน
 
-- Extension Manifest V3 รุ่นฐาน `1.2.3` และ JavaScript syntax ผ่าน
+- Extension Manifest V3 รุ่น `1.2.4` และ JavaScript syntax ผ่าน
 - Connector regression tests ผ่าน 6 รายการ
 - Tab resolver ผ่าน 4 สถานการณ์
 - Safety 500 และ Smart Incremental source guards ผ่าน
@@ -33,4 +33,4 @@ Branch: `release/v1.2.4`
 4. ตรวจ Full Backup ก่อนการติดตั้งแบบทำลายข้อมูลหรือ Replace
 5. ให้ผู้ใช้ยืนยัน Extension version และการสแกนจริง
 
-ห้ามเรียก branch นี้ว่า Release Ready จนกว่ารายการด้านบนจะผ่าน
+แพ็กเกจ `v1.2.4` ใช้สำหรับติดตั้งทดสอบจาก release branch เท่านั้น ห้าม merge เข้า Production หรือเรียกว่า Release Ready จนกว่ารายการด้านบนจะผ่าน

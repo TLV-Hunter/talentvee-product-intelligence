@@ -32,13 +32,13 @@ async function loadResolver({ active, tabs = [], getTab, createTab }) {
   return { resolver: context.TalentVeeTabResolver, updates, creates };
 }
 
-test('Manifest, UI, and installer use v1.2.3 consistently', async () => {
+test('Manifest, UI, and installer use v1.2.4 consistently', async () => {
   const manifest = JSON.parse(await source('extension/manifest.json'));
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, '1.2.3');
+  assert.equal(manifest.version, '1.2.4');
 
   for (const path of ['extension/sidepanel.html', 'START-HERE.txt', 'README.md', 'INSTALL-TALENTVEE.cmd', 'MIGRATION-CONFIG.md']) {
-    assert.match(await source(path), /v1\.2\.3/);
+    assert.match(await source(path), /v1\.2\.4/);
   }
   assert.match(await source('INSTALL-TALENTVEE.ps1'), /tab-resolver\.js/);
   assert.match(await source('extension/sidepanel.html'), /src="tab-resolver\.js"/);
