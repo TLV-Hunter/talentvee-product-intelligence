@@ -19,6 +19,7 @@
     options: $('intelOptions'),
     allCategories: $('intelAllCategories'),
     pageLimit: $('intelPageLimit'),
+    scanMode: $('intelScanMode'),
     delay: $('intelDelay'),
     start: $('btnIntelStart'),
     stop: $('btnIntelStop'),
@@ -85,12 +86,8 @@
   }
 
   async function resolveActiveTab() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    let url;
-    try { url = new URL(tab?.url || ''); } catch { url = null; }
-    if (!tab?.id || url?.hostname !== HOST || !url.pathname.startsWith('/offer/product_offer')) {
-      throw new Error('กรุณาเปิดหน้า Product Offer ในแท็บ Shopee ก่อน');
-    }
+    if (!globalThis.TalentVeeTabResolver) throw new Error('[RESOLVER_MISSING] ตัวเลือกแท็บไม่ถูกโหลด');
+    const tab = await globalThis.TalentVeeTabResolver.resolveProductOfferTab();
     tabId = tab.id;
     await chrome.storage.local.set({ [TAB_KEY]: tabId });
     return tab;
@@ -98,7 +95,11 @@
 
   async function injectCrawler() {
     if (tabId == null) throw new Error('ไม่พบแท็บ Shopee ที่ใช้สแกน');
-    await chrome.scripting.executeScript({ target: { tabId }, files: ['crawler.js'] });
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: ['crawler.js'] });
+    } catch (error) {
+      throw new Error(`[INJECT_FAILED] ${String(error?.message || error)}`);
+    }
   }
 
   async function callCrawler(name, args = []) {
@@ -142,12 +143,13 @@
   function renderProgress(snapshot) {
     const total = Math.max(1, snapshot.categoryTotal || 1);
     const currentCategory = Math.max(1, snapshot.categoryIndex || 1);
-    const pageLimit = Math.max(1, snapshot.pageLimit || 50);
+    const pageLimit = Math.max(1, snapshot.pageLimit || 500);
     const pageFraction = Math.min(1, Math.max(0, (snapshot.page || 0) / pageLimit));
     const percent = Math.min(98, (((currentCategory - 1) + pageFraction) / total) * 100);
     ui.progressFill.style.width = `${percent.toFixed(1)}%`;
     ui.progressText.textContent = snapshot.step || 'กำลังสแกน…';
-    ui.progressSub.textContent = `หมวด ${currentCategory}/${total} · พบไม่ซ้ำ ${snapshot.uniqueCount || 0} · อ่าน ${snapshot.scannedCards || 0} การ์ด · retry ${snapshot.retryCount || 0}`;
+    const pageLabel = snapshot.scanUntilEnd ? `หน้า ${snapshot.page || 0}/จนสุด (Safety ${pageLimit})` : `หน้า ${snapshot.page || 0}/${pageLimit}`;
+    ui.progressSub.textContent = `หมวด ${currentCategory}/${total} · ${pageLabel} · ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามเดิม ${snapshot.skippedKnown || 0} · retry ${snapshot.retryCount || 0}`;
     const names = snapshot.detectedCategories?.length ? snapshot.detectedCategories : snapshot.categories;
     if (ui.categoryNames) ui.categoryNames.textContent = names?.length
       ? `พบ ${names.length} หมวด: ${names.join(' · ')}`
@@ -183,13 +185,31 @@
 
   async function startScan() {
     if (processing) return;
+    ui.start.disabled = true;
+    setBadge('กำลังเปิดหน้า…', 'is-busy');
+    ui.progress.hidden = false;
+    ui.progressText.textContent = 'กำลังค้นหาและเปิดหน้า Product Offer…';
+    ui.progressSub.textContent = 'ระบบจะเลือกแท็บ Shopee ที่ถูกต้องให้อัตโนมัติ';
     try {
       await resolveActiveTab();
+      ui.progressText.textContent = 'เชื่อมตัวสแกนกับหน้า Product Offer…';
       await injectCrawler();
       await callCrawler('talentVeeCrawlerClear');
+      const selectedPageLimit = Number(ui.pageLimit.value);
+      const scanMode = ui.scanMode?.value || 'smart';
+      const knownProducts = Object.entries(database.products || {}).map(([key, record]) => ({
+        key,
+        id: record?.id || key,
+        lastSeenAt: record?.lastSeenAt || null
+      }));
       const options = {
         allCategories: ui.allCategories.checked,
-        pageLimit: Number(ui.pageLimit.value) || 50,
+        pageLimit: Number.isFinite(selectedPageLimit) ? selectedPageLimit : 0,
+        scanUntilEnd: selectedPageLimit === 0,
+        scanMode,
+        knownProducts,
+        staleAfterHours: 24,
+        unchangedPageStop: scanMode === 'new' ? 5 : 10,
         delayMs: Number(ui.delay.value) || 3500,
         retryLimit: 3
       };
@@ -202,7 +222,17 @@
       setBadge('เริ่มไม่ได้', 'is-error');
       ui.progress.hidden = false;
       ui.progressText.textContent = String(error?.message || error);
-      ui.progressSub.textContent = 'ต้องเปิดหน้า affiliate.shopee.co.th/offer/product_offer';
+      ui.progressSub.textContent = 'กดเริ่มใหม่ได้ หากยังไม่สำเร็จให้ส่งข้อความพร้อมรหัสในวงเล็บเหลี่ยม';
+      await chrome.storage.local.set({
+        talentVeeLastStartError: {
+          message: String(error?.message || error),
+          tabId,
+          checkedAt: new Date().toISOString(),
+          version: APP_VERSION
+        }
+      });
+    } finally {
+      ui.start.disabled = false;
     }
   }
 
@@ -347,6 +377,11 @@
       status: snapshot.status,
       uniqueCount: items.length,
       scannedCards: snapshot.scannedCards,
+      scanMode: snapshot.scanMode,
+      newCount: snapshot.newCount,
+      refreshedCount: snapshot.refreshedCount,
+      skippedKnown: snapshot.skippedKnown,
+      earlyStops: snapshot.earlyStops,
       categories: snapshot.categories,
       detectedCategories: snapshot.detectedCategories,
       warnings: snapshot.warnings
@@ -368,7 +403,7 @@
     processing = true;
     try {
       const stored = await chrome.storage.local.get(RUN_KEY);
-      if (snapshot.startedAt && stored[RUN_KEY] !== snapshot.startedAt && snapshot.items?.length) {
+      if (snapshot.startedAt && stored[RUN_KEY] !== snapshot.startedAt) {
         await saveSnapshot(snapshot);
       } else {
         await loadDatabase();
@@ -376,7 +411,7 @@
       ui.progressFill.style.width = '100%';
       ui.progress.hidden = false;
       ui.progressText.textContent = snapshot.status === 'cancelled' ? 'หยุดแล้ว และบันทึกผลบางส่วน' : snapshot.status === 'error' ? 'งานจบพร้อมข้อผิดพลาดบางส่วน' : 'สแกนและจัดอันดับเสร็จแล้ว';
-      ui.progressSub.textContent = `ไม่ซ้ำ ${snapshot.items?.length || 0} รายการ · ${snapshot.categories?.length || 0} หมวด${snapshot.warnings?.length ? ` · คำเตือน ${snapshot.warnings.length}` : ''}`;
+      ui.progressSub.textContent = `ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามของเดิม ${snapshot.skippedKnown || 0} · จบเร็ว ${snapshot.earlyStops?.length || 0} หมวด${snapshot.warnings?.length ? ` · คำเตือน ${snapshot.warnings.length}` : ''}`;
       setBadge(snapshot.status === 'done' ? 'READY' : 'PARTIAL', snapshot.status === 'done' ? 'is-ok' : 'is-error');
       renderDashboard();
       if (CLOUD_SYNC_ENABLED) {

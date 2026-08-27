@@ -1,4 +1,4 @@
-TalentVee Shopee Affiliate Connector v1.2.0
+TalentVee Shopee Affiliate Connector v1.2.3
 
 วิธีอัปเดตที่ง่ายที่สุด
 
@@ -9,7 +9,7 @@ TalentVee Shopee Affiliate Connector v1.2.0
 5. ถ้ามี TalentVee Connector อยู่แล้ว ให้กด Reload ที่รายการเดิม
 6. ถ้ายังไม่เคยติดตั้ง ให้กด Load unpacked แล้วเลือกโฟลเดอร์ที่เปิดในข้อ 3
 
-ตรวจว่ามุมบนของแผงแสดง v1.2.0
+ตรวจว่ามุมบนของแผงแสดง v1.2.3
 ปุ่มเปิดเว็บจะไปที่:
 https://tlv-hunter.github.io/talentvee-product-intelligence/
 

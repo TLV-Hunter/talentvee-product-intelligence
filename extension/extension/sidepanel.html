@@ -14,7 +14,7 @@
         <p class="eyebrow">TALENTVEE TOOL</p>
         <h1>Shopee Affiliate</h1>
       </div>
-      <span class="version" id="versionText">v1.2.0</span>
+      <span class="version" id="versionText">v1.2.3</span>
     </header>
 
     <section class="status-card" id="statusCard" data-state="checking" aria-live="polite">
@@ -46,7 +46,7 @@
         </div>
         <span class="scanner__badge" id="intelBadge">พร้อม</span>
       </div>
-      <p class="scanner__hint">ระบบจะเปลี่ยนหน้าและหมวดในแท็บ Shopee อัตโนมัติ กรุณาอย่าคลิกแท็บนั้นระหว่างสแกน</p>
+      <p class="scanner__hint">ระบบจะค้นหา/เปิดหน้า Product Offer แล้วเปลี่ยนหน้าและหมวดอัตโนมัติ กรุณาอย่าคลิกแท็บนั้นระหว่างสแกน</p>
 
       <div class="intel-options" id="intelOptions">
         <label class="toggle-row">
@@ -54,12 +54,21 @@
           <span><strong>สแกนทุกหมวดที่ตรวจพบ</strong><small>รวมแท็บที่ซ่อนอยู่นอกจอ เมนูเพิ่มเติม ค่าคอมพิเศษ ขายดี และหมวดสินค้า</small></span>
         </label>
         <label class="select-row">
+          <span>โหมดสแกน</span>
+          <select id="intelScanMode">
+            <option value="smart" selected>Smart Incremental · ข้ามข้อมูลใหม่กว่า 24 ชม.</option>
+            <option value="new">สินค้าใหม่เท่านั้น · เร็วที่สุด</option>
+            <option value="full">Full Scan · อัปเดตสินค้าทุกชิ้น</option>
+          </select>
+        </label>
+        <label class="select-row">
           <span>จำนวนหน้าสูงสุดต่อหมวด</span>
           <select id="intelPageLimit">
             <option value="5">5 หน้า</option>
             <option value="10">10 หน้า</option>
             <option value="25">25 หน้า</option>
-            <option value="50" selected>จนสุด / สูงสุด 50 หน้า</option>
+            <option value="50">50 หน้า</option>
+            <option value="0" selected>จนสุดอัตโนมัติ · Safety 500 หน้า</option>
           </select>
         </label>
         <label class="select-row">
@@ -197,10 +206,11 @@
       <p>รุ่นนี้ไม่อ่านหรือบันทึกรหัสผ่าน, OTP และคุกกี้ อ่านสินค้าบน <code>affiliate.shopee.co.th</code> และซิงก์ไปเว็บ TalentVee Dashboard ที่ระบุเท่านั้น</p>
     </aside>
 
-    <footer>PRODUCT INTELLIGENCE · <span id="footerVersion">v1.2.0</span> · GITHUB PAGES</footer>
+    <footer>PRODUCT INTELLIGENCE · <span id="footerVersion">v1.2.3</span> · GITHUB PAGES</footer>
   </main>
   <script src="config.js"></script>
   <script src="sidepanel.js"></script>
+  <script src="tab-resolver.js"></script>
   <script src="intelligence.js"></script>
 </body>
 </html>
