@@ -10,7 +10,7 @@
 
 ## โครงสร้าง
 
-- `extension/` — TalentVee Shopee Affiliate Connector v1.2.0
+- `extension/` — TalentVee Shopee Affiliate Connector
 - `dashboard/` — TalentVee Product Intelligence web dashboard และ `/api/sync`
 - `docs/` — คู่มือย้ายบัญชี ย้าย Hosting และ Acceptance Test
 
@@ -19,17 +19,18 @@
 - ใช้เฉพาะข้อมูลที่ `affiliate.shopee.co.th` แสดงให้บัญชีที่ผู้ใช้ล็อกอินเอง
 - ห้าม commit Password, OTP, Cookie, Session, Token, `.env` หรือ Hosting credential
 - Full Backup ไม่เก็บ Password, OTP, Cookie หรือ Shopee Session
-- Repository ควรเป็น Private จนกว่าจะตรวจความปลอดภัยและสิทธิ์ใช้งานครบ
+- Repository นี้เป็น Public เพื่อใช้ GitHub Pages ฟรี จึงห้าม commit ข้อมูลสแกนจริงหรือข้อมูลลับทุกชนิด
 
-## รุ่นปัจจุบัน
+## สถานะเวอร์ชัน
 
-- Extension: `1.2.0`
+- Production บน `main`: Extension `1.2.0` และ Dashboard version 8
+- Release candidate บน `release/v1.2.4`: ฐาน Extension `1.2.3` พร้อม Smart Incremental และ Dashboard รุ่นปรับความอ่านง่าย/Commission/คำอธิบายคะแนน
 - Full Backup format: `talentvee-full-backup` version `1`
-- Dashboard production source: version 8 checkpoint
+- XTRA regression จาก Diagnostic จริงยังเป็น Quality Gate ที่ต้องผ่านก่อนออก `v1.2.4`
 
 เริ่มติดตั้ง Extension ได้จาก `extension/README.md` และเริ่มย้าย Hosting ได้จาก `docs/MIGRATION-CHECKLIST.md`
 
-## GitHub Pages (Free fallback)
+## GitHub Pages (Production ฟรี)
 
 Static dashboard ที่เก็บข้อมูลแบบ Local-first อยู่ใน `docs/` และ build ใหม่ด้วย
 `cd dashboard && npm run build:pages` ได้ทันที เมื่อเปิด GitHub Pages จาก `main /docs`
@@ -37,3 +38,12 @@ Static dashboard ที่เก็บข้อมูลแบบ Local-first �
 
 รุ่น GitHub Pages ไม่ส่ง Password, OTP, Cookie หรือ Shopee Session ขึ้น GitHub
 ข้อมูลสินค้าจริงอยู่ในเบราว์เซอร์ของผู้ใช้ และย้ายเครื่องด้วย Full Backup ที่มี SHA-256 checksum
+
+## Quality gates
+
+- Connector: `node --test extension/tests/connector-regression.test.mjs`
+- Dashboard lint: `cd dashboard && npm run lint`
+- GitHub Pages: `cd dashboard && npm test`
+- Sites reference build: `cd dashboard && npm run build`
+
+ระบบ CI รันรายการข้างต้นเมื่อ push ไปยัง `main`, `release/**` หรือเปิด Pull Request

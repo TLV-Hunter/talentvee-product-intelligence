@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
     "db:migrate:remote": "wrangler d1 migrations apply talentvee-product-intelligence --remote",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run test:pages",
+    "test:pages": "npm run build:pages && node --test tests/pages-content.test.mjs",
+    "test:sites": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
