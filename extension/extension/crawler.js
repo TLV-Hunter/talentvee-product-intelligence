@@ -1,5 +1,6 @@
 (() => {
-  const API_VERSION = '1.2.0';
+  const API_VERSION = '1.2.4';
+  const MAX_PAGES_PER_CATEGORY = 500;
   if (window.__talentVeeCrawlerApiInstalled === API_VERSION) return;
   window.__talentVeeCrawlerApiInstalled = API_VERSION;
 
@@ -296,6 +297,17 @@
     }
   }
 
+  function knownProductMap(rawProducts) {
+    const result = new Map();
+    for (const product of Array.isArray(rawProducts) ? rawProducts : []) {
+      if (!product || typeof product !== 'object') continue;
+      const checkedAt = Date.parse(product.lastSeenAt || '') || 0;
+      if (product.key) result.set(String(product.key), checkedAt);
+      if (product.id) result.set(String(product.id), checkedAt);
+    }
+    return result;
+  }
+
   function snapshot(job, includeItems = false) {
     return {
       status: job.status,
@@ -305,8 +317,14 @@
       categoryTotal: job.categories.length,
       page: job.page,
       pageLimit: job.options.pageLimit,
+      scanUntilEnd: job.options.scanUntilEnd,
+      scanMode: job.options.scanMode,
       uniqueCount: job.itemMap.size,
       scannedCards: job.scannedCards,
+      newCount: job.newCount,
+      refreshedCount: job.refreshedCount,
+      skippedKnown: job.skippedKnown,
+      earlyStops: job.earlyStops,
       categories: job.categories,
       detectedCategories: job.detectedCategories,
       error: job.error,
@@ -328,20 +346,35 @@
     const allCategories = rawOptions.allCategories !== false;
     const initialDetected = categoryCandidates().map((item) => item.label);
     const categories = allCategories && initialDetected.length ? initialDetected : [current];
-    const pageLimit = Math.min(50, Math.max(1, Number(rawOptions.pageLimit) || 50));
+    const requestedPageLimit = Number(rawOptions.pageLimit);
+    const scanUntilEnd = rawOptions.scanUntilEnd === true || requestedPageLimit === 0;
+    const pageLimit = scanUntilEnd
+      ? MAX_PAGES_PER_CATEGORY
+      : Math.min(MAX_PAGES_PER_CATEGORY, Math.max(1, requestedPageLimit || 50));
     const delayMs = Math.min(6000, Math.max(1500, Number(rawOptions.delayMs) || 3500));
     const retryLimit = Math.min(5, Math.max(1, Number(rawOptions.retryLimit) || 3));
+    const scanMode = ['smart', 'new', 'full'].includes(rawOptions.scanMode) ? rawOptions.scanMode : 'smart';
+    const staleAfterHours = Math.min(720, Math.max(1, Number(rawOptions.staleAfterHours) || 24));
+    const unchangedPageStop = scanMode === 'full'
+      ? 0
+      : Math.min(50, Math.max(2, Number(rawOptions.unchangedPageStop) || (scanMode === 'new' ? 5 : 10)));
     const job = {
       status: 'running',
       step: 'เตรียมรายการหมวดหมู่…',
       category: '',
       categoryIndex: 0,
       page: 0,
-      options: { allCategories, pageLimit, delayMs, retryLimit },
+      options: { allCategories, pageLimit, scanUntilEnd, delayMs, retryLimit, scanMode, staleAfterHours, unchangedPageStop },
       categories,
       detectedCategories: initialDetected,
       itemMap: new Map(),
+      knownProducts: knownProductMap(rawOptions.knownProducts),
+      seenKeys: new Set(),
       scannedCards: 0,
+      newCount: 0,
+      refreshedCount: 0,
+      skippedKnown: 0,
+      earlyStops: [],
       warnings: [],
       retryCount: 0,
       errorLog: [],
@@ -366,6 +399,7 @@
           job.category = category;
           job.categoryIndex = categoryIndex + 1;
           job.page = 1;
+          let consecutiveUnchangedPages = 0;
           job.step = `เปิดหมวด ${category}`;
 
           try {
@@ -390,13 +424,64 @@
                 break;
               }
               const pageCards = cards();
+              let acceptedOnPage = 0;
               pageCards.forEach((card, index) => {
                 const rank = ((page - 1) * 20) + index + 1;
-                mergeItem(job, readCard(card, category, page, rank));
+                const item = readCard(card, category, page, rank);
+                const key = item.id || `${item.name}|${item.priceText}`;
+                const firstOccurrence = !job.seenKeys.has(key);
+                job.seenKeys.add(key);
+
+                if (!firstOccurrence) {
+                  if (job.itemMap.has(key)) mergeItem(job, item);
+                  return;
+                }
+
+                const knownAt = job.knownProducts.get(key);
+                const known = knownAt !== undefined;
+                const stale = !knownAt || (Date.now() - knownAt) >= job.options.staleAfterHours * 3600000;
+                const keep = job.options.scanMode === 'full'
+                  || !known
+                  || (job.options.scanMode === 'smart' && stale);
+
+                if (keep) {
+                  mergeItem(job, item);
+                  acceptedOnPage += 1;
+                  if (known) job.refreshedCount += 1;
+                  else job.newCount += 1;
+                } else {
+                  job.skippedKnown += 1;
+                }
               });
               job.scannedCards += pageCards.length;
 
-              if (page >= pageLimit) break;
+              if (job.options.scanMode !== 'full') {
+                consecutiveUnchangedPages = acceptedOnPage === 0 ? consecutiveUnchangedPages + 1 : 0;
+                if (consecutiveUnchangedPages >= job.options.unchangedPageStop) {
+                  job.earlyStops.push({
+                    category,
+                    page,
+                    consecutivePages: consecutiveUnchangedPages,
+                    reason: job.options.scanMode === 'new' ? 'NO_NEW_PRODUCTS' : 'NO_NEW_OR_STALE_PRODUCTS'
+                  });
+                  job.step = `ผ่านของเดิม ${consecutiveUnchangedPages} หน้าติดกัน · จบหมวด ${category}`;
+                  break;
+                }
+              }
+
+              if (page >= pageLimit) {
+                if (job.options.scanUntilEnd && !disabled(nextButton())) {
+                  job.warnings.push(`${category}: ถึง Safety Limit ${MAX_PAGES_PER_CATEGORY} หน้า แต่ยังพบปุ่มหน้าถัดไป`);
+                  job.errorLog.push({
+                    at: new Date().toISOString(),
+                    action: 'SAFETY_LIMIT',
+                    category,
+                    page,
+                    message: `หยุดที่ Safety Limit ${MAX_PAGES_PER_CATEGORY} หน้า`
+                  });
+                }
+                break;
+              }
               job.step = `รอ ${Math.round(job.options.delayMs / 100) / 10} วิ · ไปหน้า ${page + 1} · ${category}`;
               const moved = await goNextPage(job);
               if (!moved) break;
