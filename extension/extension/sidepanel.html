@@ -14,7 +14,7 @@
         <p class="eyebrow">TALENTVEE TOOL</p>
         <h1>Shopee Affiliate</h1>
       </div>
-      <span class="version" id="versionText">v1.2.4</span>
+      <span class="version" id="versionText">v1.2.5</span>
     </header>
 
     <section class="status-card" id="statusCard" data-state="checking" aria-live="polite">
@@ -52,6 +52,15 @@
         <label class="toggle-row">
           <input id="intelAllCategories" type="checkbox" checked>
           <span><strong>สแกนทุกหมวดที่ตรวจพบ</strong><small>รวมแท็บที่ซ่อนอยู่นอกจอ เมนูเพิ่มเติม ค่าคอมพิเศษ ขายดี และหมวดสินค้า</small></span>
+        </label>
+        <label class="select-row">
+          <span>ชุดสินค้าที่ต้องการอัปเดต</span>
+          <select id="intelTargetMode">
+            <option value="all" selected>ทั้งหมด · ใช้โหมดสแกนด้านล่าง</option>
+            <option value="new100">สินค้าใหม่ยืนยัน Top 100 · ต้องมีป้าย NEW จริง</option>
+            <option value="best100">ขายดี Top 100 · จากยอดขายในฐานเดิม</option>
+            <option value="trending100">มาแรง Top 100 · ต้องมีประวัติอย่างน้อย 2 รอบ</option>
+          </select>
         </label>
         <label class="select-row">
           <span>โหมดสแกน</span>
@@ -206,11 +215,12 @@
       <p>รุ่นนี้ไม่อ่านหรือบันทึกรหัสผ่าน, OTP และคุกกี้ อ่านสินค้าบน <code>affiliate.shopee.co.th</code> และซิงก์ไปเว็บ TalentVee Dashboard ที่ระบุเท่านั้น</p>
     </aside>
 
-    <footer>PRODUCT INTELLIGENCE · <span id="footerVersion">v1.2.4</span> · GITHUB PAGES</footer>
+    <footer>PRODUCT INTELLIGENCE · <span id="footerVersion">v1.2.5</span> · GITHUB PAGES</footer>
   </main>
   <script src="config.js"></script>
   <script src="sidepanel.js"></script>
   <script src="tab-resolver.js"></script>
+  <script src="scan-targets.js"></script>
   <script src="intelligence.js"></script>
 </body>
 </html>

@@ -24,9 +24,9 @@
 ## สถานะเวอร์ชัน
 
 - Production บน `main`: Extension `1.2.0` และ Dashboard version 8
-- Release candidate บน `release/v1.2.4`: Extension `1.2.4` พร้อม Smart Incremental, Tab Resolver และ Dashboard รุ่นปรับความอ่านง่าย/Commission/คำอธิบายคะแนน
+- Feature candidate บน `feature/top-100-update-modes`: Extension `1.2.5` เพิ่มสินค้าใหม่ยืนยัน/ขายดี/มาแรง Top 100 โดยต่อยอดจาก `release/v1.2.4`
 - Full Backup format: `talentvee-full-backup` version `1`
-- XTRA regression จาก Diagnostic จริงยังเป็น Quality Gate ที่ต้องผ่านก่อน merge รุ่น `v1.2.4` เข้า Production
+- XTRA regression จาก Diagnostic จริงยังเป็น Quality Gate ที่ต้องผ่านก่อน merge รุ่น `v1.2.5` เข้า Production
 
 เริ่มติดตั้ง Extension ได้จาก `extension/README.md` และเริ่มย้าย Hosting ได้จาก `docs/MIGRATION-CHECKLIST.md`
 

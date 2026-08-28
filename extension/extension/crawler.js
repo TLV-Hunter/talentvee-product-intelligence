@@ -1,5 +1,5 @@
 (() => {
-  const API_VERSION = '1.2.4';
+  const API_VERSION = '1.2.5';
   const MAX_PAGES_PER_CATEGORY = 500;
   if (window.__talentVeeCrawlerApiInstalled === API_VERSION) return;
   window.__talentVeeCrawlerApiInstalled = API_VERSION;
@@ -319,6 +319,11 @@
       pageLimit: job.options.pageLimit,
       scanUntilEnd: job.options.scanUntilEnd,
       scanMode: job.options.scanMode,
+      targetMode: job.options.targetMode,
+      targetLimit: job.options.targetLimit,
+      targetRequested: job.targetRequested,
+      targetFound: job.itemMap.size,
+      targetReached: job.targetReached,
       uniqueCount: job.itemMap.size,
       scannedCards: job.scannedCards,
       newCount: job.newCount,
@@ -354,6 +359,17 @@
     const delayMs = Math.min(6000, Math.max(1500, Number(rawOptions.delayMs) || 3500));
     const retryLimit = Math.min(5, Math.max(1, Number(rawOptions.retryLimit) || 3));
     const scanMode = ['smart', 'new', 'full'].includes(rawOptions.scanMode) ? rawOptions.scanMode : 'smart';
+    const targetMode = ['all', 'new100', 'best100', 'trending100'].includes(rawOptions.targetMode)
+      ? rawOptions.targetMode
+      : 'all';
+    const targetLimit = Math.min(100, Math.max(1, Number(rawOptions.targetLimit) || 100));
+    const targetProductKeys = new Set(
+      (Array.isArray(rawOptions.targetProductKeys) ? rawOptions.targetProductKeys : [])
+        .map((value) => String(value || ''))
+        .filter(Boolean)
+        .slice(0, targetLimit)
+    );
+    const targetRequested = targetMode === 'new100' ? targetLimit : targetProductKeys.size;
     const staleAfterHours = Math.min(720, Math.max(1, Number(rawOptions.staleAfterHours) || 24));
     const unchangedPageStop = scanMode === 'full'
       ? 0
@@ -364,16 +380,31 @@
       category: '',
       categoryIndex: 0,
       page: 0,
-      options: { allCategories, pageLimit, scanUntilEnd, delayMs, retryLimit, scanMode, staleAfterHours, unchangedPageStop },
+      options: {
+        allCategories,
+        pageLimit,
+        scanUntilEnd,
+        delayMs,
+        retryLimit,
+        scanMode,
+        staleAfterHours,
+        unchangedPageStop,
+        targetMode,
+        targetLimit
+      },
       categories,
       detectedCategories: initialDetected,
       itemMap: new Map(),
       knownProducts: knownProductMap(rawOptions.knownProducts),
+      targetProductKeys,
+      targetRequested,
+      targetReached: false,
       seenKeys: new Set(),
       scannedCards: 0,
       newCount: 0,
       refreshedCount: 0,
       skippedKnown: 0,
+      skippedTarget: 0,
       earlyStops: [],
       warnings: [],
       retryCount: 0,
@@ -394,7 +425,7 @@
         }
         const categories = job.categories;
         for (let categoryIndex = 0; categoryIndex < categories.length; categoryIndex += 1) {
-          if (job.status !== 'running') break;
+          if (job.status !== 'running' || job.targetReached) break;
           const category = categories[categoryIndex];
           job.category = category;
           job.categoryIndex = categoryIndex + 1;
@@ -426,6 +457,7 @@
               const pageCards = cards();
               let acceptedOnPage = 0;
               pageCards.forEach((card, index) => {
+                if (job.targetReached) return;
                 const rank = ((page - 1) * 20) + index + 1;
                 const item = readCard(card, category, page, rank);
                 const key = item.id || `${item.name}|${item.priceText}`;
@@ -440,29 +472,50 @@
                 const knownAt = job.knownProducts.get(key);
                 const known = knownAt !== undefined;
                 const stale = !knownAt || (Date.now() - knownAt) >= job.options.staleAfterHours * 3600000;
-                const keep = job.options.scanMode === 'full'
-                  || !known
-                  || (job.options.scanMode === 'smart' && stale);
+                const matchesTarget = job.options.targetMode === 'new100'
+                  ? item.newBadgeAvailable === true
+                  : ['best100', 'trending100'].includes(job.options.targetMode)
+                    ? job.targetProductKeys.has(String(item.id || key))
+                    : null;
+                const keep = job.options.targetMode === 'all'
+                  ? job.options.scanMode === 'full'
+                    || !known
+                    || (job.options.scanMode === 'smart' && stale)
+                  : matchesTarget;
 
                 if (keep) {
                   mergeItem(job, item);
                   acceptedOnPage += 1;
                   if (known) job.refreshedCount += 1;
                   else job.newCount += 1;
+                  if (job.targetRequested > 0 && job.itemMap.size >= job.targetRequested) {
+                    job.targetReached = true;
+                  }
+                } else if (job.options.targetMode !== 'all') {
+                  job.skippedTarget += 1;
                 } else {
                   job.skippedKnown += 1;
                 }
               });
               job.scannedCards += pageCards.length;
 
-              if (job.options.scanMode !== 'full') {
+              if (job.targetReached) {
+                job.step = `พบเป้าหมาย ${job.itemMap.size}/${job.targetRequested} รายการแล้ว`;
+                break;
+              }
+
+              const allowEarlyStop = job.options.targetMode === 'new100'
+                || (job.options.targetMode === 'all' && job.options.scanMode !== 'full');
+              if (allowEarlyStop) {
                 consecutiveUnchangedPages = acceptedOnPage === 0 ? consecutiveUnchangedPages + 1 : 0;
                 if (consecutiveUnchangedPages >= job.options.unchangedPageStop) {
                   job.earlyStops.push({
                     category,
                     page,
                     consecutivePages: consecutiveUnchangedPages,
-                    reason: job.options.scanMode === 'new' ? 'NO_NEW_PRODUCTS' : 'NO_NEW_OR_STALE_PRODUCTS'
+                    reason: job.options.targetMode === 'new100' || job.options.scanMode === 'new'
+                      ? 'NO_NEW_PRODUCTS'
+                      : 'NO_NEW_OR_STALE_PRODUCTS'
                   });
                   job.step = `ผ่านของเดิม ${consecutiveUnchangedPages} หน้าติดกัน · จบหมวด ${category}`;
                   break;
@@ -494,7 +547,16 @@
         }
 
         if (job.status === 'running') job.status = 'done';
-        job.step = job.status === 'cancelled' ? 'หยุดแล้ว — เก็บผลบางส่วน' : 'สแกนเสร็จแล้ว';
+        if (job.options.targetMode !== 'all' && job.itemMap.size < job.targetRequested) {
+          job.warnings.push(
+            `พบเป้าหมาย ${job.itemMap.size}/${job.targetRequested} รายการจากหน้าที่บัญชีนี้มองเห็น`
+          );
+        }
+        job.step = job.status === 'cancelled'
+          ? 'หยุดแล้ว — เก็บผลบางส่วน'
+          : job.targetReached
+            ? `อัปเดตชุดเป้าหมายครบ ${job.itemMap.size} รายการ`
+            : 'สแกนเสร็จแล้ว';
         job.finishedAt = new Date().toISOString();
       } catch (error) {
         job.status = 'error';

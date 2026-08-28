@@ -24,6 +24,7 @@ $payloadFiles = @(
   'background.js',
   'dashboard-bridge.js',
   'tab-resolver.js',
+  'scan-targets.js',
   'crawler.js',
   'intelligence.js',
   'scanner.js',

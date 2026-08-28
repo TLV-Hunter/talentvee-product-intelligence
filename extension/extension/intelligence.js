@@ -20,6 +20,7 @@
     allCategories: $('intelAllCategories'),
     pageLimit: $('intelPageLimit'),
     scanMode: $('intelScanMode'),
+    targetMode: $('intelTargetMode'),
     delay: $('intelDelay'),
     start: $('btnIntelStart'),
     stop: $('btnIntelStop'),
@@ -149,7 +150,10 @@
     ui.progressFill.style.width = `${percent.toFixed(1)}%`;
     ui.progressText.textContent = snapshot.step || 'กำลังสแกน…';
     const pageLabel = snapshot.scanUntilEnd ? `หน้า ${snapshot.page || 0}/จนสุด (Safety ${pageLimit})` : `หน้า ${snapshot.page || 0}/${pageLimit}`;
-    ui.progressSub.textContent = `หมวด ${currentCategory}/${total} · ${pageLabel} · ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามเดิม ${snapshot.skippedKnown || 0} · retry ${snapshot.retryCount || 0}`;
+    const targetLabel = snapshot.targetMode && snapshot.targetMode !== 'all'
+      ? ` · เป้าหมาย ${snapshot.targetFound || 0}/${snapshot.targetRequested || snapshot.targetLimit || 100}`
+      : '';
+    ui.progressSub.textContent = `หมวด ${currentCategory}/${total} · ${pageLabel}${targetLabel} · ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามเดิม ${snapshot.skippedKnown || 0} · retry ${snapshot.retryCount || 0}`;
     const names = snapshot.detectedCategories?.length ? snapshot.detectedCategories : snapshot.categories;
     if (ui.categoryNames) ui.categoryNames.textContent = names?.length
       ? `พบ ${names.length} หมวด: ${names.join(' · ')}`
@@ -196,7 +200,15 @@
       await injectCrawler();
       await callCrawler('talentVeeCrawlerClear');
       const selectedPageLimit = Number(ui.pageLimit.value);
-      const scanMode = ui.scanMode?.value || 'smart';
+      const selectedScanMode = ui.scanMode?.value || 'smart';
+      if (!globalThis.TalentVeeScanTargets) {
+        throw new Error('[TARGET_HELPER_MISSING] ตัวเลือกชุด Top 100 ไม่ถูกโหลด');
+      }
+      const targetOptions = globalThis.TalentVeeScanTargets.buildTargetOptions(
+        rows,
+        ui.targetMode?.value || 'all'
+      );
+      const scanMode = targetOptions.targetMode === 'new100' ? 'new' : selectedScanMode;
       const knownProducts = Object.entries(database.products || {}).map(([key, record]) => ({
         key,
         id: record?.id || key,
@@ -207,6 +219,7 @@
         pageLimit: Number.isFinite(selectedPageLimit) ? selectedPageLimit : 0,
         scanUntilEnd: selectedPageLimit === 0,
         scanMode,
+        ...targetOptions,
         knownProducts,
         staleAfterHours: 24,
         unchangedPageStop: scanMode === 'new' ? 5 : 10,
@@ -378,6 +391,9 @@
       uniqueCount: items.length,
       scannedCards: snapshot.scannedCards,
       scanMode: snapshot.scanMode,
+      targetMode: snapshot.targetMode,
+      targetRequested: snapshot.targetRequested,
+      targetFound: snapshot.targetFound,
       newCount: snapshot.newCount,
       refreshedCount: snapshot.refreshedCount,
       skippedKnown: snapshot.skippedKnown,
@@ -411,7 +427,10 @@
       ui.progressFill.style.width = '100%';
       ui.progress.hidden = false;
       ui.progressText.textContent = snapshot.status === 'cancelled' ? 'หยุดแล้ว และบันทึกผลบางส่วน' : snapshot.status === 'error' ? 'งานจบพร้อมข้อผิดพลาดบางส่วน' : 'สแกนและจัดอันดับเสร็จแล้ว';
-      ui.progressSub.textContent = `ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามของเดิม ${snapshot.skippedKnown || 0} · จบเร็ว ${snapshot.earlyStops?.length || 0} หมวด${snapshot.warnings?.length ? ` · คำเตือน ${snapshot.warnings.length}` : ''}`;
+      const targetSummary = snapshot.targetMode && snapshot.targetMode !== 'all'
+        ? `เป้าหมาย ${snapshot.targetFound || 0}/${snapshot.targetRequested || snapshot.targetLimit || 100} · `
+        : '';
+      ui.progressSub.textContent = `${targetSummary}ใหม่ ${snapshot.newCount || 0} · อัปเดต ${snapshot.refreshedCount || 0} · ข้ามของเดิม ${snapshot.skippedKnown || 0} · จบเร็ว ${snapshot.earlyStops?.length || 0} หมวด${snapshot.warnings?.length ? ` · คำเตือน ${snapshot.warnings.length}` : ''}`;
       setBadge(snapshot.status === 'done' ? 'READY' : 'PARTIAL', snapshot.status === 'done' ? 'is-ok' : 'is-error');
       renderDashboard();
       if (CLOUD_SYNC_ENABLED) {

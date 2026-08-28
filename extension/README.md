@@ -1,8 +1,13 @@
 # TalentVee — Shopee Affiliate Connector
 
-Chrome Extension รุ่น `v1.2.4` สำหรับตรวจ session สแกนหลายหน้า/ทุกหมวดที่ตรวจพบ เก็บประวัติ จัดอันดับสินค้า Shopee Affiliate และส่งข้อมูลเข้า TalentVee Product Intelligence บน GitHub Pages
+Chrome Extension รุ่น `v1.2.5` สำหรับตรวจ session สแกนหลายหน้า/ทุกหมวดที่ตรวจพบ เก็บประวัติ จัดอันดับสินค้า Shopee Affiliate และส่งข้อมูลเข้า TalentVee Product Intelligence บน GitHub Pages
 
-รุ่น v1.2.4 รวม **Smart Incremental**: ข้ามสินค้าที่ตรวจภายใน 24 ชั่วโมง อัปเดตสินค้าที่ข้อมูลเก่าเพื่อรักษาการคำนวณแนวโน้ม และจบหมวดเร็วเมื่อพบแต่ของเดิม 10 หน้าติดต่อกัน พร้อมโหมดสินค้าใหม่เท่านั้นและ Full Scan รวมถึง Tab Resolver ที่เปิดหรือสลับไปหน้า Product Offer ให้ถูกต้อง
+รุ่น v1.2.5 เพิ่มชุดอัปเดตเฉพาะ **สินค้าใหม่ยืนยัน Top 100**, **ขายดี Top 100** และ **มาแรง Top 100** โดยยังคง Smart Incremental, สินค้าใหม่เท่านั้น, Full Scan และ Tab Resolver
+
+- สินค้าใหม่ยืนยัน Top 100 เก็บเฉพาะสินค้าที่หน้า Shopee แสดงป้าย NEW จริง สูงสุด 100 รายการ
+- ขายดี Top 100 เลือกจากยอดขายตัวเลขในฐานเดิม แล้วอัปเดตเฉพาะรายการเป้าหมายที่ยังพบในหน้า Shopee
+- มาแรง Top 100 เลือกเฉพาะรายการที่มีประวัติอย่างน้อย 2 รอบและผ่านเกณฑ์ TRENDING แล้วเรียงตามความเร็วขาย
+- หากหน้า Shopee แสดงเป้าหมายไม่ครบ ระบบรายงานจำนวนที่พบจริงและไม่สร้างรายการทดแทน
 
 เว็บ Dashboard: `https://tlv-hunter.github.io/talentvee-product-intelligence/`
 

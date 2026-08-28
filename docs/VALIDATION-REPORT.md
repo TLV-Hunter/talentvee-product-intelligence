@@ -1,12 +1,14 @@
 # Validation Report
 
 วันที่ตรวจ: 2026-08-27 UTC
-Branch: `release/v1.2.4`
+Branch: `feature/top-100-update-modes`
 
 ## ผ่าน
 
-- Extension Manifest V3 รุ่น `1.2.4` และ JavaScript syntax ผ่าน
-- Connector regression tests ผ่าน 6 รายการ
+- Extension Manifest V3 รุ่น `1.2.5` และ JavaScript syntax ผ่าน
+- Connector regression tests ผ่าน 10 รายการ; XTRA fixture test ยัง skipped 1 รายการ
+- Top 100 target selector ผ่านการทดสอบขายดี, มาแรง และสินค้าใหม่ยืนยัน
+- Installer ตรวจว่ารวม `scan-targets.js` แล้ว
 - Tab resolver ผ่าน 4 สถานการณ์
 - Safety 500 และ Smart Incremental source guards ผ่าน
 - Dashboard lint ผ่านด้วย 0 errors; มี 3 warnings ที่ตรวจแล้ว
@@ -33,4 +35,4 @@ Branch: `release/v1.2.4`
 4. ตรวจ Full Backup ก่อนการติดตั้งแบบทำลายข้อมูลหรือ Replace
 5. ให้ผู้ใช้ยืนยัน Extension version และการสแกนจริง
 
-แพ็กเกจ `v1.2.4` ใช้สำหรับติดตั้งทดสอบจาก release branch เท่านั้น ห้าม merge เข้า Production หรือเรียกว่า Release Ready จนกว่ารายการด้านบนจะผ่าน
+แพ็กเกจ `v1.2.5` ใช้สำหรับติดตั้งทดสอบจาก feature branch เท่านั้น ห้าม merge เข้า Production หรือเรียกว่า Release Ready จนกว่ารายการด้านบนจะผ่าน

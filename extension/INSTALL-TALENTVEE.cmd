@@ -4,7 +4,7 @@ setlocal
 set "SCRIPT_DIR=%~dp0"
 
 echo.
-echo TalentVee Connector v1.2.4 - Clean Install or Update
+echo TalentVee Connector v1.2.5 - Clean Install or Update
 echo =================================================
 echo Installing to the permanent application folder...
 echo.
