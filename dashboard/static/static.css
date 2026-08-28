@@ -15,23 +15,35 @@
   backdrop-filter: blur(8px);
 }
 
-.github-pages-notice strong { font-size: 11px; }
-.github-pages-notice span { font-size: 9px; font-weight: 700; }
-.github-pages-notice small { color: #526072; font-size: 8px; }
+.github-pages-notice strong {
+  font-size: 11px;
+}
+.github-pages-notice span {
+  font-size: 9px;
+  font-weight: 700;
+}
+.github-pages-notice small {
+  color: #526072;
+  font-size: 8px;
+}
 
 .cloud-badge.local i {
   background: #15946b;
   box-shadow: 0 0 0 4px #15946b18;
 }
 
-.guide-card > * { display: none; }
+.guide-card > * {
+  display: none;
+}
 
 .guide-card::before {
   content: "GITHUB PAGES BACKUP";
   display: block;
   color: #ff5a2f;
-  font: 800 8px ui-monospace, monospace;
-  letter-spacing: .16em;
+  font:
+    800 8px ui-monospace,
+    monospace;
+  letter-spacing: 0.16em;
 }
 
 .guide-card::after {
@@ -45,5 +57,191 @@
 }
 
 @media (max-width: 760px) {
-  .github-pages-notice { right: 10px; bottom: 76px; left: 10px; max-width: none; }
+  .github-pages-notice {
+    right: 10px;
+    bottom: 76px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+/* GitHub Pages readability pass: keep operational text at a comfortable size. */
+body {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.nav-item,
+.filter,
+.search input,
+.sync-button,
+.primary-action {
+  font-size: 13px;
+}
+
+.eyebrow,
+.panel-kicker,
+.sidebar-note,
+.data-banner > span {
+  font-size: 10px;
+}
+
+.data-banner strong,
+.connector-summary strong,
+.portable-backup-bar strong,
+.metric-card span,
+.metric-card small,
+.panel-head button,
+.last-sync {
+  font-size: 12px;
+}
+
+.data-banner small,
+.connector-summary small,
+.portable-backup-bar small,
+.signal-list small,
+.product-cell small,
+.detail-metrics span,
+.detail-list,
+.history-card > div:first-child,
+.definition-note,
+.chart-note {
+  font-size: 11px;
+}
+
+.panel-head h2 {
+  font-size: 18px;
+}
+
+.tabs button,
+.export-button,
+.connector-actions button,
+.connector-actions a,
+.connector-actions select,
+.cloud-badge,
+.github-pages-notice span,
+.github-pages-notice small {
+  font-size: 12px;
+}
+
+table {
+  min-width: 1180px;
+}
+
+th {
+  padding: 12px 14px;
+  font-size: 11px;
+}
+
+td {
+  padding: 13px 14px;
+  font-size: 13px;
+}
+
+.product-cell img,
+.image-fallback {
+  width: 44px;
+  height: 44px;
+}
+
+.product-cell strong {
+  max-width: 280px;
+  font-size: 13px;
+}
+
+.category-chip,
+.label-stack span,
+.detail-labels span,
+.muted {
+  font-size: 11px;
+}
+
+.score {
+  width: 40px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.xtra-state {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #a13c22;
+  background: #ffe5dc;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.product-analysis {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #ded7ef;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fbf9ff, #fff9f7);
+}
+
+.analysis-score-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.analysis-score-line span,
+.analysis-score-line strong {
+  display: block;
+}
+
+.analysis-score-line span {
+  color: #7657d6;
+  font:
+    850 10px ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+}
+
+.analysis-score-line strong {
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.analysis-score-line b {
+  color: #fff;
+  background: #26344f;
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 16px;
+}
+
+.analysis-copy {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.analysis-copy strong {
+  font-size: 13px;
+}
+
+.analysis-copy ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  color: #526072;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.analysis-cautions {
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: #735c53;
+  background: #fff3ef;
+}
+
+.product-analysis > small {
+  display: block;
+  margin-top: 13px;
+  color: #7a8497;
+  font-size: 11px;
 }
