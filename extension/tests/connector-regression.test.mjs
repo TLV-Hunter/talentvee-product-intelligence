@@ -32,16 +32,64 @@ async function loadResolver({ active, tabs = [], getTab, createTab }) {
   return { resolver: context.TalentVeeTabResolver, updates, creates };
 }
 
-test('Manifest, UI, and installer use v1.2.4 consistently', async () => {
+async function loadScanTargets() {
+  const context = vm.createContext({});
+  context.globalThis = context;
+  vm.runInContext(await source('extension/scan-targets.js'), context);
+  return context.TalentVeeScanTargets;
+}
+
+test('Manifest, UI, and installer use v1.2.5 consistently', async () => {
   const manifest = JSON.parse(await source('extension/manifest.json'));
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, '1.2.4');
+  assert.equal(manifest.version, '1.2.5');
 
   for (const path of ['extension/sidepanel.html', 'START-HERE.txt', 'README.md', 'INSTALL-TALENTVEE.cmd', 'MIGRATION-CONFIG.md']) {
-    assert.match(await source(path), /v1\.2\.4/);
+    assert.match(await source(path), /v1\.2\.5/);
   }
   assert.match(await source('INSTALL-TALENTVEE.ps1'), /tab-resolver\.js/);
-  assert.match(await source('extension/sidepanel.html'), /src="tab-resolver\.js"/);
+  assert.match(await source('INSTALL-TALENTVEE.ps1'), /scan-targets\.js/);
+  const panel = await source('extension/sidepanel.html');
+  assert.match(panel, /src="tab-resolver\.js"/);
+  assert.match(panel, /src="scan-targets\.js"/);
+  assert.match(panel, /id="intelTargetMode"/);
+  assert.match(panel, /value="new100"/);
+  assert.match(panel, /value="best100"/);
+  assert.match(panel, /value="trending100"/);
+  assert.match(await source('extension/crawler.js'), /API_VERSION = '1\.2\.5'/);
+});
+
+test('Top 100 selector ranks best sellers from observed sold counts', async () => {
+  const targets = await loadScanTargets();
+  const rows = Array.from({ length: 125 }, (_, index) => ({
+    id: `product-${index}`,
+    soldCount: index * 10,
+    labels: []
+  }));
+  rows.push({ id: 'missing-sold', soldCount: null, labels: [] });
+  const keys = Array.from(targets.selectKnownTargetKeys(rows, 'best100'));
+  assert.equal(keys.length, 100);
+  assert.equal(keys[0], 'product-124');
+  assert.equal(keys.at(-1), 'product-25');
+});
+
+test('Top 100 selector uses only evidence-backed trending history', async () => {
+  const targets = await loadScanTargets();
+  const rows = [
+    { id: 'fast', hasHistory: true, salesPerDay: 90, labels: ['TRENDING'] },
+    { id: 'slow', hasHistory: true, salesPerDay: 12, labels: ['TRENDING'] },
+    { id: 'rising-only', hasHistory: true, salesPerDay: 120, labels: ['RISING'] },
+    { id: 'no-history', hasHistory: false, salesPerDay: 500, labels: ['TRENDING'] }
+  ];
+  assert.deepEqual(Array.from(targets.selectKnownTargetKeys(rows, 'trending100')), ['fast', 'slow']);
+});
+
+test('New Top 100 mode is badge-confirmed and does not invent a known target list', async () => {
+  const targets = await loadScanTargets();
+  const options = targets.buildTargetOptions([], 'new100');
+  assert.equal(options.targetMode, 'new100');
+  assert.equal(options.targetLimit, 100);
+  assert.deepEqual(Array.from(options.targetProductKeys), []);
 });
 
 test('Tab resolver keeps an active Product Offer tab', async () => {
@@ -89,6 +137,15 @@ test('Crawler keeps Safety 500 and Smart Incremental guards', async () => {
   assert.match(crawler, /staleAfterHours/);
   assert.match(crawler, /NO_NEW_OR_STALE_PRODUCTS/);
   assert.doesNotMatch(crawler, /Math\.min\(50,\s*Math\.max\(1,\s*Number\(rawOptions\.pageLimit/);
+});
+
+test('Crawler supports truthful Top 100 target modes', async () => {
+  const crawler = await source('extension/crawler.js');
+  assert.match(crawler, /\['all', 'new100', 'best100', 'trending100'\]/);
+  assert.match(crawler, /item\.newBadgeAvailable === true/);
+  assert.match(crawler, /job\.targetProductKeys\.has/);
+  assert.match(crawler, /targetLimit = Math\.min\(100/);
+  assert.match(crawler, /พบเป้าหมาย/);
 });
 
 test.skip('Real XTRA badge regression awaits the diagnostic JSON fixture', () => {});
